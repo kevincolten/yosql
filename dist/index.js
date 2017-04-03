@@ -18,7 +18,7 @@ function createDatabase(timestamp) {
   });
 }
 
-function loadDatabase(uri, timestamp, callback) {
+function loadDatabase(uri, timestamp, options, callback) {
   try {
     var database = createDatabase(timestamp);
     _mongodb.MongoClient.connect(uri, function (err, mongodb) {
@@ -28,7 +28,7 @@ function loadDatabase(uri, timestamp, callback) {
       // console.log("Connected correctly to server");
       mongodb.collections().then(function (collections) {
         database.serialize(function () {
-          createTables(database, collections, {}, function () {
+          createTables(database, collections, {}, options, function () {
             database.close();
             mongodb.close();
             callback();
@@ -41,14 +41,18 @@ function loadDatabase(uri, timestamp, callback) {
   }
 }
 
-function createTables(database, collections, schema, callback, idx) {
+function createTables(database, collections, schema, options, callback, idx) {
   idx = idx || 0;
   if (idx < collections.length) {
     var tableName = collections[idx].collectionName;
     return collections[idx].find().toArray(function (err, documents) {
-      createTable(database, tableName, documents, schema, function () {
-        return createTables(collections, callback, ++idx);
-      });
+      if (!options.ignore.includes(tableName)) {
+        createTable(database, tableName, documents, schema, function () {
+          return createTables(database, collections, schema, options, callback, ++idx);
+        });
+      } else {
+        return createTables(database, collections, schema, options, callback, ++idx);
+      }
     });
   }
 
@@ -59,7 +63,7 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   idx = idx || 0;
   if (!schema[tableName]) {
     schema[tableName] = {};
-    // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
+    console.log('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);');
     schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
     return database.run('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);', function () {
       return createTable(database, tableName, documents, schema, callback, columns, idx);
@@ -160,6 +164,8 @@ function createTable(database, tableName, documents, schema, callback, columns, 
       } else {
         return [value];
       }
+    } else if (value === undefined) {
+      return '';
     }
     return value;
   }

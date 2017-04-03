@@ -8,7 +8,7 @@ function createDatabase(timestamp) {
   });
 }
 
-function loadDatabase(uri, timestamp, callback) {
+function loadDatabase(uri, timestamp, options, callback) {
   try {
     const database = createDatabase(timestamp);
     MongoClient.connect(uri, function (err, mongodb) {
@@ -18,7 +18,7 @@ function loadDatabase(uri, timestamp, callback) {
       // console.log("Connected correctly to server");
       mongodb.collections().then(collections => {
         database.serialize(() => {
-          createTables(database, collections, {}, () => {
+          createTables(database, collections, {}, options, () => {
             database.close();
             mongodb.close();
             callback();
@@ -31,14 +31,19 @@ function loadDatabase(uri, timestamp, callback) {
   }
 }
 
-function createTables(database, collections, schema, callback, idx) {
+function createTables(database, collections, schema, options, callback, idx) {
   idx = idx || 0;
   if (idx < collections.length) {
     const tableName = collections[idx].collectionName;
     return collections[idx].find().toArray((err, documents) => {
-      createTable(database, tableName, documents, schema, () => {
-        return createTables(collections, callback, ++idx);
-      });
+      if (!options.ignore.includes(tableName)) {
+        createTable(database, tableName, documents, schema, () => {
+          return createTables(database, collections, schema, options, callback, ++idx);
+        });
+      } else {
+        return createTables(database, collections, schema, options, callback, ++idx);
+      }
+
     });
   }
 
@@ -150,6 +155,8 @@ function createTable(database, tableName, documents, schema, callback, columns, 
       } else {
         return [value];
       }
+    } else if (value === undefined) {
+      return '';
     }
     return value;
   }

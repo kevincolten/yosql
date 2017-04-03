@@ -56,13 +56,10 @@ function createTables(database, collections, schema, callback, idx) {
 }
 
 function createTable(database, tableName, documents, schema, callback, columns, idx) {
-  documents = documents.filter(function (obj) {
-    return obj;
-  });
   idx = idx || 0;
   if (!schema[tableName]) {
     schema[tableName] = {};
-    console.log('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);');
+    // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
     return database.run('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);', function () {
       return createTable(database, tableName, documents, schema, callback, columns, idx);
@@ -87,7 +84,7 @@ function createTable(database, tableName, documents, schema, callback, columns, 
 
   function addColumn(tableName, column, callback) {
     schema[tableName][column] = 'TEXT';
-    console.log('ALTER TABLE "' + tableName + '" ADD COLUMN "' + column + '" TEXT;');
+    // console.log(`ALTER TABLE "${tableName}" ADD COLUMN "${column}" TEXT;`);
     return database.run('ALTER TABLE "' + tableName + '" ADD COLUMN "' + column + '" TEXT;', callback);
   }
 
@@ -110,9 +107,9 @@ function createTable(database, tableName, documents, schema, callback, columns, 
           document[newColumn].map(function (obj) {
             return obj || {};
           }).forEach(function (obj) {
-            return obj[tableName + '_yosql_id'] = document.id;
+            return obj[tableName + '_yosql_id'] = document['yosql_id'];
           });
-          console.log(tableName + '_' + newColumn);
+          // console.log(`${tableName}_${newColumn}`);
           return createTable(database, tableName + '_' + newColumn, document[newColumn], schema, function () {
             delete document[newColumn];
             return insertRow(tableName, columns, document, callback);
@@ -141,7 +138,7 @@ function createTable(database, tableName, documents, schema, callback, columns, 
     idx = idx || 0;
     if (idx < documents.length) {
       return database.get('SELECT "yosql_id" from ' + tableName + ' ORDER BY "yosql_id" DESC LIMIT 1;', function (err, row) {
-        documents[idx]['id'] = row ? row.id + 1 : 1;
+        documents[idx]['yosql_id'] = row ? row['yosql_id'] + 1 : 1;
         return insertRow(tableName, columns, documents[idx], function () {
           return insertRows(tableName, columns, documents, callback, ++idx);
         });
@@ -158,6 +155,8 @@ function createTable(database, tableName, documents, schema, callback, columns, 
         return value;
       } else if (_bson.ObjectId.isValid(value)) {
         return value.toString();
+      } else if (value === null) {
+        return '';
       } else {
         return [value];
       }

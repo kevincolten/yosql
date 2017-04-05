@@ -71,10 +71,9 @@ function createTable(database, tableName, documents, schema, callback, columns, 
     return addColumn(tableName, columns[idx], () => {
       return createTable(database, tableName, documents, schema, callback, columns, ++idx);
     });
-  } else {
-    columns = columns || [];
   }
 
+  columns = columns || [];
   return insertRows(tableName, columns, documents, callback);
 
   function addColumn(tableName, column, callback) {

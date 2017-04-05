@@ -63,7 +63,7 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   idx = idx || 0;
   if (!schema[tableName]) {
     schema[tableName] = {};
-    console.log('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);');
+    // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
     return database.run('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);', function () {
       return createTable(database, tableName, documents, schema, callback, columns, idx);
@@ -80,10 +80,9 @@ function createTable(database, tableName, documents, schema, callback, columns, 
     return addColumn(tableName, columns[idx], function () {
       return createTable(database, tableName, documents, schema, callback, columns, ++idx);
     });
-  } else {
-    columns = columns || [];
   }
 
+  columns = columns || [];
   return insertRows(tableName, columns, documents, callback);
 
   function addColumn(tableName, column, callback) {

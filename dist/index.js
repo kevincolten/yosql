@@ -12,15 +12,15 @@ var _bson = require('bson');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function createDatabase(timestamp) {
-  return new _sqlite2.default.Database(timestamp + '.sqlite3', function (err) {
+function createDatabase(fileName) {
+  return new _sqlite2.default.Database(fileName, function (err) {
     if (err) console.log(err.message);
   });
 }
 
-function loadDatabase(uri, timestamp, options, callback) {
+function loadDatabase(uri, filename, options, callback) {
   try {
-    var database = createDatabase(timestamp);
+    var database = createDatabase(filename);
     _mongodb.MongoClient.connect(uri, function (err, mongodb) {
       if (err) {
         return callback(err);
@@ -170,9 +170,9 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   }
 }
 
-function runQuery(query, timestamp, callback) {
+function runQuery(query, filename, callback) {
   try {
-    var database = new _sqlite2.default.Database(timestamp + '.sqlite3', function (err) {
+    var database = new _sqlite2.default.Database(filename, function (err) {
       if (err) console.log(err.message);
     });
     database.all(query, function (err, rows) {

@@ -2,15 +2,15 @@ import { MongoClient } from 'mongodb';
 import sqlite3 from 'sqlite3';
 import { ObjectId } from 'bson';
 
-function createDatabase(timestamp) {
-  return new sqlite3.Database(timestamp + '.sqlite3', err => {
+function createDatabase(fileName) {
+  return new sqlite3.Database(fileName, err => {
     if (err) console.log(err.message);
   });
 }
 
-function loadDatabase(uri, timestamp, options, callback) {
+function loadDatabase(uri, filename, options, callback) {
   try {
-    const database = createDatabase(timestamp);
+    const database = createDatabase(filename);
     MongoClient.connect(uri, function (err, mongodb) {
       if (err) {
         return callback(err);
@@ -161,9 +161,9 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   }
 }
 
-function runQuery(query, timestamp, callback) {
+function runQuery(query, filename, callback) {
   try {
-    const database = new sqlite3.Database(timestamp + '.sqlite3', err => {
+    const database = new sqlite3.Database(filename, err => {
       if (err) console.log(err.message);
     });
     database.all(query, function(err, rows) {

@@ -51,7 +51,7 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0 };
     // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
-    schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
+    schema[tableName]['columns']['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
     return database.run(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`, () => {
       return createTable(database, tableName, documents, schema, callback, columns, idx);
     });

@@ -12,9 +12,7 @@ function loadDatabase(uri, filename, options, callback) {
   try {
     const database = createDatabase(filename);
     MongoClient.connect(uri, function (err, mongodb) {
-      if (err) {
-        return callback(err);
-      }
+      if (error) return callback(error);
       // console.log("Connected correctly to server");
       mongodb.collections().then(collections => {
         database.serialize(() => {
@@ -31,11 +29,11 @@ function loadDatabase(uri, filename, options, callback) {
   }
 }
 
-function createTables(database, collections, schema, options, callback, idx) {
-  idx = idx || 0;
+function createTables(database, collections, schema, options, callback, idx = 0) {
   if (idx < collections.length) {
     const tableName = collections[idx].collectionName;
-    return collections[idx].find().toArray((err, documents) => {
+    return collections[idx].find().toArray((error, documents) => {
+      if (error) console.error(error);
       if (!options.ignore.includes(tableName)) {
         createTable(database, tableName, documents, schema, () => {
           return createTables(database, collections, schema, options, callback, ++idx);
@@ -46,14 +44,12 @@ function createTables(database, collections, schema, options, callback, idx) {
 
     });
   }
-
   return callback();
 }
 
-function createTable(database, tableName, documents, schema, callback, columns, idx) {
-  idx = idx || 0;
+function createTable(database, tableName, documents, schema, callback, columns, idx = 0) {
   if (!schema[tableName]) {
-    schema[tableName] = {};
+    schema[tableName] = { columns: {}, length: 0 };
     // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
     return database.run(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`, () => {
@@ -77,7 +73,8 @@ function createTable(database, tableName, documents, schema, callback, columns, 
   return insertRows(tableName, columns, documents, callback);
 
   function addColumn(tableName, column, callback) {
-    schema[tableName][column] = 'TEXT';
+    if (schema[tableName]['columns'][column]) return callback();
+    schema[tableName]['columns'][column] = 'TEXT';
     // console.log(`ALTER TABLE "${tableName}" ADD COLUMN "${column}" TEXT;`);
     return database.run(`ALTER TABLE "${tableName}" ADD COLUMN "${column}" TEXT;`, callback);
   }
@@ -128,14 +125,11 @@ function createTable(database, tableName, documents, schema, callback, columns, 
     return database.run(`INSERT INTO "${tableName}" (${cleanColumns.join(', ')}) VALUES (${values.join(', ')});`, callback);
   }
 
-  function insertRows(tableName, columns, documents, callback, idx) {
-    idx = idx || 0;
+  function insertRows(tableName, columns, documents, callback, idx = 0) {
     if (idx < documents.length) {
-      return database.get(`SELECT "yosql_id" from ${tableName} ORDER BY "yosql_id" DESC LIMIT 1;`, function (err, row) {
-        documents[idx]['yosql_id'] = row ? row['yosql_id'] + 1 : 1;
-        return insertRow(tableName, columns, documents[idx], () => {
-          return insertRows(tableName, columns, documents, callback, ++idx);
-        });
+      documents[idx]['yosql_id'] = ++schema[tableName].length;
+      return insertRow(tableName, columns, documents[idx], () => {
+        return insertRows(tableName, columns, documents, callback, ++idx);
       });
     }
     return callback();

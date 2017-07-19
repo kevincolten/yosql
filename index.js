@@ -150,6 +150,8 @@ function createTable(database, tableName, documents, schema, callback, columns, 
       }
     } else if (value === undefined) {
       return '';
+    } else if (typeof value === 'string') {
+      return value.replace(/\'/g,"''")
     }
     return value;
   }

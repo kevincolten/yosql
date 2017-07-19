@@ -23,7 +23,7 @@ function loadDatabase(uri, filename, options, callback) {
     var database = createDatabase(filename);
     _mongodb.MongoClient.connect(uri, function (err, mongodb) {
       if (error) return callback(error);
-      // console.log("Connected correctly to server");
+      // console.log('Connected correctly to server');
       mongodb.collections().then(function (collections) {
         database.serialize(function () {
           createTables(database, collections, {}, options, function () {
@@ -63,9 +63,9 @@ function createTable(database, tableName, documents, schema, callback, columns) 
 
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0 };
-    // console.log(`CREATE TABLE "${tableName}" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);`);
-    schema[tableName]['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
-    return database.run('CREATE TABLE "' + tableName + '" ("yosql_id" INTEGER PRIMARY KEY UNIQUE);', function () {
+    // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
+    schema[tableName]['columns']['yosql_id'] = 'INTEGER PRIMARY KEY UNIQUE';
+    return database.run('CREATE TABLE \'' + tableName + '\' (\'yosql_id\' INTEGER PRIMARY KEY UNIQUE);', function () {
       return createTable(database, tableName, documents, schema, callback, columns, idx);
     });
   } else if (columns && idx < columns.length) {
@@ -88,8 +88,8 @@ function createTable(database, tableName, documents, schema, callback, columns) 
   function addColumn(tableName, column, callback) {
     if (schema[tableName]['columns'][column]) return callback();
     schema[tableName]['columns'][column] = 'TEXT';
-    // console.log(`ALTER TABLE "${tableName}" ADD COLUMN "${column}" TEXT;`);
-    return database.run('ALTER TABLE "' + tableName + '" ADD COLUMN "' + column + '" TEXT;', callback);
+    // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
+    return database.run('ALTER TABLE \'' + tableName + '\' ADD COLUMN \'' + column + '\' TEXT;', callback);
   }
 
   function insertRow(tableName, columns, document, callback) {
@@ -132,10 +132,10 @@ function createTable(database, tableName, documents, schema, callback, columns) 
     var values = [];
     var cleanColumns = [];
     columns.forEach(function (column) {
-      cleanColumns.push('"' + column + '"');
-      values.push('"' + parseValue(document[column]) + '"');
+      cleanColumns.push('\'' + column + '\'');
+      values.push('\'' + parseValue(document[column]) + '\'');
     });
-    return database.run('INSERT INTO "' + tableName + '" (' + cleanColumns.join(', ') + ') VALUES (' + values.join(', ') + ');', callback);
+    return database.run('INSERT INTO \'' + tableName + '\' (' + cleanColumns.join(', ') + ') VALUES (' + values.join(', ') + ');', callback);
   }
 
   function insertRows(tableName, columns, documents, callback) {
@@ -165,6 +165,8 @@ function createTable(database, tableName, documents, schema, callback, columns) 
       }
     } else if (value === undefined) {
       return '';
+    } else if (typeof value === 'string') {
+      return value.replace(/\'/g, "''");
     }
     return value;
   }

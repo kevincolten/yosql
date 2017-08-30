@@ -1,4 +1,5 @@
 const yosql = require('./dist/index');
+const fs = require('fs');
 
 const documents = [{}];
 [
@@ -21,8 +22,6 @@ for (let i = 1; i < 3000; i++) {
   documents[i] = documents[0];
 }
 
-const schema = {};
-
-yosql.createTable('test', documents, schema, () => {
-  console.log(schema);
+yosql.createTable('test', documents, (schema) => {
+  fs.writeFileSync('output.json', JSON.stringify(schema, null, 2));
 });

@@ -2,7 +2,7 @@
   "name": "yosql",
   "version": "1.0.0",
   "private": true,
-  "description": "Convert your NoSQL database and JSON collections to SQL.",
+  "description": "Convert your MongoDB database and JSON collections to SQL.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

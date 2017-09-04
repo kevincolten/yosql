@@ -22,21 +22,6 @@ for (let i = 1; i < 3000; i++) {
   documents[i] = documents[0];
 }
 
-// yosql.createTable('test', documents, (schema) => {
-//   fs.writeFileSync('output.json', JSON.stringify(schema, null, 2));
-// });
-
-yosql.loadDatabase('mongodb://localhost/aca-campus', {
-  ignore: ['objectlabs-system', 'admin', 'collections', '__versions'],
-  // only: ['textbooks']
-}, (err, schema) => {
-  if (err) return console.log(err);
-  const db = new sqlite3.Database('campus-manager.sqlite3');
-  Object.keys(schema).forEach(table => {
-    db.serialize(() => {
-      db.run(schema[table].queries[0]);
-      db.run(schema[table].queries[1]);      
-    });
-  });
-  db.close();
+yosql.createTable('test', documents, (schema) => {
+  fs.writeFileSync('output.json', JSON.stringify(schema, null, 2));
 });

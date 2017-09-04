@@ -2,7 +2,7 @@
   "name": "yosql",
   "version": "1.0.0",
   "private": true,
-  "description": "Query your MongoDB Database using SQL.",
+  "description": "Convert your NoSQL database and JSON collections to SQL.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,14 +13,14 @@
     "mongo",
     "mongodb",
     "yosql",
-    "nosql"
+    "nosql",
+    "json"
   ],
   "author": "Kevin Colten",
   "license": "ISC",
   "dependencies": {
     "bson": "^1.0.0",
-    "mongodb": "^2.2.12",
-    "sqlite3": "^3.1.8"
+    "mongodb": "^2.2.12"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -30,10 +30,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kevincolten/yosql.git"
+    "url": "git+https://gitlab.com/kevincolten/yosql.git"
   },
   "bugs": {
-    "url": "https://github.com/kevincolten/yosql/issues"
+    "url": "https://gitlab.com/kevincolten/yosql/issues"
   },
-  "homepage": "https://github.com/kevincolten/yosql#readme"
+  "homepage": "https://gitlab.com/kevincolten/yosql#readme"
 }

@@ -4,37 +4,22 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _mongodb = require('mongodb');
 
-var _sqlite = require('sqlite3');
-
-var _sqlite2 = _interopRequireDefault(_sqlite);
-
 var _bson = require('bson');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var database = null;
 var schema = {};
 
-function createDatabase(fileName) {
-  return new _sqlite2.default.Database(fileName, function (err) {
-    if (err) console.log(err.message);
-  });
-}
-
-function loadDatabase(uri, filename, options, callback) {
+function loadDatabase(uri, options, callback) {
   try {
-    database = createDatabase(filename);
     _mongodb.MongoClient.connect(uri, function (err, mongodb) {
-      if (error) return callback(error);
+      if (err) return callback(err);
       // console.log('Connected correctly to server');
       mongodb.collections().then(function (collections) {
-        database.serialize(function () {
-          createTables(collections, {}, options, function () {
-            database.close();
-            mongodb.close();
-            callback();
-          });
+        createTables(collections, options, function (err, schema) {
+          mongodb.close();
+          callback(err, schema);
         });
+      }).catch(function (error) {
+        return callback(error);
       });
     });
   } catch (err) {
@@ -49,27 +34,41 @@ function createTables(collections, options, callback) {
     var tableName = collections[idx].collectionName;
     return collections[idx].find().toArray(function (error, documents) {
       if (error) console.error(error);
-      if (!options.ignore.includes(tableName)) {
+      if (options.only || options.ignore) {
+        if (options.only && options.only.find(function (only) {
+          return tableName === only;
+        })) {
+          createTable(tableName, documents, function () {
+            return createTables(collections, options, callback, ++idx);
+          });
+        } else if (options.ignore && !options.ignore.find(function (ignore) {
+          return tableName.includes(ignore);
+        })) {
+          createTable(tableName, documents, function () {
+            return createTables(collections, options, callback, ++idx);
+          });
+        } else {
+          return createTables(collections, options, callback, ++idx);
+        }
+      } else {
         createTable(tableName, documents, function () {
           return createTables(collections, options, callback, ++idx);
         });
-      } else {
-        return createTables(collections, options, callback, ++idx);
       }
     });
   }
 
-  return callback();
+  return callback(null, schema);
 }
 
 function createTable(tableName, documents, callback, columns) {
   var idx = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
 
   if (!schema[tableName]) {
-    schema[tableName] = { columns: {}, length: 0, query: [], rows: [] };
+    schema[tableName] = { columns: {}, length: 0, queries: [], rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'INTEGER PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].query.push('CREATE TABLE \'' + tableName + '\' (\'yosql_id\' INTEGER PRIMARY KEY UNIQUE);');
+    schema[tableName].queries.push('CREATE TABLE \'' + tableName + '\' (\'yosql_id\' INTEGER PRIMARY KEY UNIQUE);');
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
@@ -128,8 +127,8 @@ function insertRows(tableName, columns, documents, callback) {
     return '\'' + filledRow.join("', '") + '\'';
   }).join('), (');
 
-  schema[tableName].query.push('INSERT INTO \'' + tableName + '\' (\'' + columnNames.join("', '") + '\') VALUES (' + inserts + ');');
-  return callback(schema);
+  schema[tableName].queries.push('INSERT INTO \'' + tableName + '\' (\'' + columnNames.join("', '") + '\') VALUES (' + inserts + ');');
+  return callback(null, schema);
 }
 
 function insertRow(tableName, columns, document) {
@@ -182,16 +181,16 @@ function addColumn(tableName, column, callback) {
   if (schema[tableName]['columns'][column]) return callback();
   schema[tableName]['columns'][column] = { type: 'TEXT', order: Object.keys(schema[tableName].columns).length };
   // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
-  schema[tableName].query[0] = schema[tableName].query[0].replace(');', ', \'' + column + '\' ' + schema[tableName]['columns'][column].type + ');');
-  return callback();
+  schema[tableName].queries[0] = schema[tableName].queries[0].replace(');', ', \'' + column + '\' ' + schema[tableName]['columns'][column].type + ');');
+  return callback(null, schema);
 }
 
 function runQuery(query, filename, callback) {
   try {
-    var _database = new _sqlite2.default.Database(filename, function (err) {
+    var database = new sqlite3.Database(filename, function (err) {
       if (err) console.log(err.message);
     });
-    _database.all(query, function (err, rows) {
+    database.all(query, function (err, rows) {
       if (err) {
         return callback(err);
       }
@@ -203,7 +202,6 @@ function runQuery(query, filename, callback) {
 }
 
 module.exports = {
-  createDatabase: createDatabase,
   loadDatabase: loadDatabase,
   createTables: createTables,
   createTable: createTable,

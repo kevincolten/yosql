@@ -1,30 +1,19 @@
 import { MongoClient } from 'mongodb';
-import sqlite3 from 'sqlite3';
 import { ObjectId } from 'bson';
-let database = null;
 const schema = {};
 
-function createDatabase(fileName) {
-  return new sqlite3.Database(fileName, err => {
-    if (err) console.log(err.message);
-  });
-}
-
-function loadDatabase(uri, filename, options, callback) {
+function loadDatabase(uri, options, callback) {
   try {
-    database = createDatabase(filename);
     MongoClient.connect(uri, function (err, mongodb) {
-      if (error) return callback(error);
+      if (err) return callback(err);
       // console.log('Connected correctly to server');
       mongodb.collections().then(collections => {
-        database.serialize(() => {
-          createTables(collections, {}, options, () => {
-            database.close();
-            mongodb.close();
-            callback();
-          });
+        createTables(collections, options, (err, schema) => {
+          mongodb.close();
+          callback(err, schema);
         });
-      });
+      })
+      .catch(error => callback(error));
     });
   } catch (err) {
     return callback(err);
@@ -36,26 +25,39 @@ function createTables(collections, options, callback, idx = 0) {
     const tableName = collections[idx].collectionName;
     return collections[idx].find().toArray((error, documents) => {
       if (error) console.error(error);
-      if (!options.ignore.includes(tableName)) {
+      if (options.only || options.ignore) {
+        if (options.only && options.only.find(only => {
+          return tableName === only;
+        })) {
+          createTable(tableName, documents, () => {
+            return createTables(collections, options, callback, ++idx);
+          });
+        } else if (options.ignore && !options.ignore.find(ignore => {
+          return tableName.includes(ignore);
+        })) {
+          createTable(tableName, documents, () => {
+            return createTables(collections, options, callback, ++idx);
+          });
+        } else { 
+          return createTables(collections, options, callback, ++idx);
+        }
+      } else {
         createTable(tableName, documents, () => {
           return createTables(collections, options, callback, ++idx);
         });
-      } else {
-        return createTables(collections, options, callback, ++idx);
       }
-
     });
   }
 
-  return callback();
+  return callback(null, schema);
 }
 
 function createTable(tableName, documents, callback, columns, idx = 0) {
   if (!schema[tableName]) {
-    schema[tableName] = { columns: {}, length: 0, query: [], rows: [] };
+    schema[tableName] = { columns: {}, length: 0, queries: [], rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'INTEGER PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].query.push(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
+    schema[tableName].queries.push(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], () => {
@@ -114,8 +116,8 @@ function insertRows(tableName, columns, documents, callback) {
     return `'${filledRow.join("', '")}'`;
   }).join('), (');
   
-  schema[tableName].query.push(`INSERT INTO '${tableName}' ('${columnNames.join("', '")}') VALUES (${inserts});`);
-  return callback(schema);
+  schema[tableName].queries.push(`INSERT INTO '${tableName}' ('${columnNames.join("', '")}') VALUES (${inserts});`);
+  return callback(null, schema);
 }
 
 function insertRow(tableName, columns, document) {
@@ -169,8 +171,8 @@ function addColumn(tableName, column, callback) {
   if (schema[tableName]['columns'][column]) return callback();
   schema[tableName]['columns'][column] = { type: 'TEXT', order: Object.keys(schema[tableName].columns).length };
   // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
-  schema[tableName].query[0] = schema[tableName].query[0].replace(');', `, '${column}' ${schema[tableName]['columns'][column].type});`);
-  return callback();
+  schema[tableName].queries[0] = schema[tableName].queries[0].replace(');', `, '${column}' ${schema[tableName]['columns'][column].type});`);
+  return callback(null, schema);
 }
 
 function runQuery(query, filename, callback) {
@@ -190,7 +192,6 @@ function runQuery(query, filename, callback) {
 }
 
 module.exports = {
-  createDatabase,
   loadDatabase,
   createTables,
   createTable,

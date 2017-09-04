@@ -90,8 +90,8 @@ fetch('http://rss.indeed.com/rss?q=nodejs').then(res => res.text())
       const db = new sqlite3.Database('database.sqlite3');
       Object.keys(schema).forEach(table => {
         db.serialize(() => {
-          db.run(schema[table].queries[0]);
-          db.run(schema[table].queries[1]);      
+          db.run(schema[table].queries[0]); // Create statement;
+          db.run(schema[table].queries[1]); // Insert statement;
         });
       });
       db.close();
@@ -127,3 +127,4 @@ yosql.loadDatabase('mongodb://localhost/database-name', {
 
 ## TODO
 * Support for blobs
+* Add tests

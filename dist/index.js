@@ -65,10 +65,10 @@ function createTable(tableName, documents, callback, columns) {
   var idx = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
 
   if (!schema[tableName]) {
-    schema[tableName] = { columns: {}, length: 0, queries: [], rows: [] };
+    schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'INTEGER PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].queries.push('CREATE TABLE \'' + tableName + '\' (\'yosql_id\' INTEGER PRIMARY KEY UNIQUE);');
+    schema[tableName].queries.create = 'CREATE TABLE \'' + tableName + '\' (\'yosql_id\' INTEGER PRIMARY KEY UNIQUE);';
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
@@ -127,7 +127,7 @@ function insertRows(tableName, columns, documents, callback) {
     return '\'' + filledRow.join("', '") + '\'';
   }).join('), (');
 
-  schema[tableName].queries[1] = 'INSERT INTO \'' + tableName + '\' (\'' + columnNames.join("', '") + '\') VALUES (' + inserts + ');';
+  schema[tableName].queries.insert = 'INSERT INTO \'' + tableName + '\' (\'' + columnNames.join("', '") + '\') VALUES (' + inserts + ');';
   return callback(null, schema);
 }
 
@@ -181,7 +181,7 @@ function addColumn(tableName, column, callback) {
   if (schema[tableName]['columns'][column]) return callback();
   schema[tableName]['columns'][column] = { type: 'TEXT', order: Object.keys(schema[tableName].columns).length };
   // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
-  schema[tableName].queries[0] = schema[tableName].queries[0].replace(');', ', \'' + column + '\' ' + schema[tableName]['columns'][column].type + ');');
+  schema[tableName].queries.create = schema[tableName].queries.create.replace(');', ', \'' + column + '\' ' + schema[tableName]['columns'][column].type + ');');
   return callback(null, schema);
 }
 

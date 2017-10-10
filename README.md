@@ -67,8 +67,8 @@ yosql.createTable('people', people, (err, schema) => {
   const db = new sqlite3.Database('database.sqlite3');
   Object.keys(schema).forEach(table => {
     db.serialize(() => {
-      db.run(schema[table].queries[0]); // Create statement;
-      db.run(schema[table].queries[1]); // Insert statement;      
+      db.run(schema[table].queries.create); // Create statement;
+      db.run(schema[table].queries.insert); // Insert statement;
     });
   });
   db.close();
@@ -90,8 +90,8 @@ fetch('http://rss.indeed.com/rss?q=nodejs').then(res => res.text())
       const db = new sqlite3.Database('database.sqlite3');
       Object.keys(schema).forEach(table => {
         db.serialize(() => {
-          db.run(schema[table].queries[0]); // Create statement;
-          db.run(schema[table].queries[1]); // Insert statement;
+          db.run(schema[table].queries.create); // Create statement;
+          db.run(schema[table].queries.insert); // Insert statement;
         });
       });
       db.close();
@@ -113,8 +113,8 @@ yosql.loadDatabase('mongodb://localhost/database-name', {
   const db = new sqlite3.Database('database.sqlite3');
   Object.keys(schema).forEach(table => {
     db.serialize(() => {
-      db.run(schema[table].queries[0]); // Create statement;
-      db.run(schema[table].queries[1]); // Insert statement;
+      db.run(schema[table].queries.create); // Create statement;
+      db.run(schema[table].queries.insert); // Insert statement;
     });
   });
   db.close();

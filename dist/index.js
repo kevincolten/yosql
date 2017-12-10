@@ -68,7 +68,7 @@ function createTable(tableName, documents, callback, columns) {
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'INTEGER PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].queries.create = 'CREATE TABLE ' + tableName + ' (yosql_id INTEGER PRIMARY KEY UNIQUE);';
+    schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id INTEGER PRIMARY KEY UNIQUE);';
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
@@ -109,7 +109,7 @@ function parseValue(value) {
 
 function insertRows(tableName, columns, documents, callback) {
   documents.forEach(function (document) {
-    document.yosql_id = ++schema[tableName].length;
+    document.yosql_id = !isNaN(document.yosql_id) ? document.yosql_id : ++schema[tableName].length;
     insertRow(tableName, columns, document);
   });
 
@@ -169,10 +169,8 @@ function insertRow(tableName, columns, document) {
   }
 
   var row = {};
-  // const cleanColumns = [];
   columns.forEach(function (column) {
-    // cleanColumns.push(`'${column}'`);
-    row[column] = parseValue(document[column]);
+    return row[column] = parseValue(document[column]);
   });
   return schema[tableName].rows.push(row);
 }
@@ -181,7 +179,7 @@ function addColumn(tableName, column, callback) {
   if (schema[tableName]['columns'][column]) return callback();
   schema[tableName]['columns'][column] = { type: 'TEXT', order: Object.keys(schema[tableName].columns).length };
   // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
-  schema[tableName].queries.create = schema[tableName].queries.create.replace(');', ', ' + column + ' ' + schema[tableName]['columns'][column].type + ');');
+  schema[tableName].queries.create = schema[tableName].queries.create.replace(');', ', ' + ('`' + column + '`') + ' ' + schema[tableName]['columns'][column].type + ');');
   return callback(null, schema);
 }
 

@@ -125,6 +125,5 @@ yosql.loadDatabase('mongodb://localhost/database-name', {
 1. `npm install`
 1. `npm run build`
 
-## TODO
-* Support for blobs
-* Add tests
+## Test
+1. `npm test`

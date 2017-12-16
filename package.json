@@ -5,8 +5,8 @@
   "description": "Convert your MongoDB database and JSON collections to SQL.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel index.js --presets es2015 --out-dir dist"
+    "test": "mocha test.js",
+    "build": "babel index.js --presets env,stage-2 --plugins tailcall-optimization --out-dir dist"
   },
   "keywords": [
     "sql",
@@ -19,6 +19,9 @@
   "author": "Kevin Colten",
   "license": "ISC",
   "dependencies": {
+    "babel-plugin-tailcall-optimization": "^1.0.11",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-2": "^6.24.1",
     "bson": "^1.0.0",
     "mongodb": "^2.2.12"
   },
@@ -26,7 +29,7 @@
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
-    "babel-preset-es2015": "^6.18.0"
+    "mocha": "^4.0.1"
   },
   "repository": {
     "type": "git",

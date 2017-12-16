@@ -110,7 +110,7 @@ function parseValue(value) {
 function insertRows(tableName, columns, documents, callback) {
   documents.forEach(function (document) {
     document.yosql_id = !isNaN(document.yosql_id) ? document.yosql_id : ++schema[tableName].length;
-    insertRow(tableName, columns, document);
+    return insertRow(tableName, columns, document);
   });
 
   var columnNames = [];
@@ -164,7 +164,7 @@ function insertRow(tableName, columns, document) {
     }
     columns.push(newColumn);
     return addColumn(tableName, newColumn, function () {
-      insertRow(tableName, columns, document);
+      return insertRow(tableName, columns, document);
     });
   }
 
@@ -183,25 +183,8 @@ function addColumn(tableName, column, callback) {
   return callback(null, schema);
 }
 
-function runQuery(query, filename, callback) {
-  try {
-    var database = new sqlite3.Database(filename, function (err) {
-      if (err) console.log(err.message);
-    });
-    database.all(query, function (err, rows) {
-      if (err) {
-        return callback(err);
-      }
-      callback(err, rows);
-    });
-  } catch (err) {
-    callback(err);
-  }
-}
-
 module.exports = {
   loadDatabase: loadDatabase,
   createTables: createTables,
-  createTable: createTable,
-  runQuery: runQuery
+  createTable: createTable
 };

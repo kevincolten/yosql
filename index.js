@@ -54,8 +54,8 @@ function createTable(tableName, documents, callback, columns, idx = 0) {
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
-    schema[tableName]['columns']['yosql_id'] = { type: 'BIGINT PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].queries.create = `CREATE TABLE ${'`' + tableName + '`'} (yosql_id BIGINT PRIMARY KEY UNIQUE);`;
+    schema[tableName]['columns']['yosql_id'] = { type: 'BIGINT UNSIGNED PRIMARY KEY UNIQUE', order: 0 };
+    schema[tableName].queries.create = `CREATE TABLE ${'`' + tableName + '`'} (yosql_id BIGINT UNSIGNED PRIMARY KEY UNIQUE);`;
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], () => {

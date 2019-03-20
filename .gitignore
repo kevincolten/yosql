@@ -3,3 +3,4 @@ node_modules
 output.json
 .vscode
 *.orig
+.DS_Store

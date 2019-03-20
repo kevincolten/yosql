@@ -1,16 +1,22 @@
 # YoSQL
+
 ## Convert your MongoDB database and JSON collections to SQL
 
 ## API
+
 ### `yosql.createTable(tableName, collection, callback)`
 
 ### `yosql.loadDatabase(mongoUri, options, callback)`
+
 #### `options`
+
 * `only` only translate tables that **exactly** match these strings
 * `ignore` ignore tables that **include** these strings
 
 ## Examples
+
 ### Convert JSON collection
+
 ```js
 const yosql = require('yosql');
 const sqlite3 = require('sqlite3');
@@ -76,6 +82,7 @@ yosql.createTable('people', people, (err, schema) => {
 ```
 
 ### Convert JSON-ified XML/HTML
+
 ```js
 const yosql = require('yosql');
 const sqlite3 = require('sqlite3');
@@ -102,6 +109,7 @@ fetch('http://rss.indeed.com/rss?q=nodejs').then(res => res.text())
 ```
 
 ### Convert MongoDB Database
+
 ```js
 const yosql = require('yosql');
 const sqlite3 = require('sqlite3');
@@ -122,8 +130,10 @@ yosql.loadDatabase('mongodb://localhost/database-name', {
 ```
 
 ## Transpile
+
 1. `npm install`
 1. `npm run build`
 
 ## Test
+
 1. `npm test`

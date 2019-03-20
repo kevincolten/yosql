@@ -6,6 +6,12 @@ var _mongodb = require('mongodb');
 
 var _bson = require('bson');
 
+var _v = require('uuid/v4');
+
+var _v2 = _interopRequireDefault(_v);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var schema = {};
 
 function loadDatabase(uri, options, callback) {
@@ -67,8 +73,8 @@ function createTable(tableName, documents, callback, columns) {
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
-    schema[tableName]['columns']['yosql_id'] = { type: 'BIGINT UNSIGNED PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id BIGINT UNSIGNED PRIMARY KEY UNIQUE);';
+    schema[tableName]['columns']['yosql_id'] = { type: 'UUID PRIMARY KEY UNIQUE', order: 0 };
+    schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id UUID PRIMARY KEY UNIQUE);';
     return createTable(tableName, documents, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
@@ -109,7 +115,7 @@ function parseValue(value) {
 
 function insertRows(tableName, columns, documents, callback) {
   documents.forEach(function (document) {
-    document.yosql_id = !isNaN(document.yosql_id) ? document.yosql_id : ++schema[tableName].length;
+    document.yosql_id = document.yosql_id || (0, _v2.default)();
     return insertRow(tableName, columns, document);
   });
 

@@ -131,9 +131,9 @@ yosql.loadDatabase('mongodb://localhost/database-name', {
 
 ## Transpile
 
-1. `npm install`
-1. `npm run build`
+1. `yarn`
+2. `yarn build`
 
 ## Test
 
-1. `npm test`
+1. `yarn test`

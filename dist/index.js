@@ -2,6 +2,8 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _mongodb = require('mongodb');
 
 var _bson = require('bson');
@@ -12,9 +14,16 @@ var _v2 = _interopRequireDefault(_v);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var getUuid = require('uuid-by-string');
 var schema = {};
+var options = {
+  idempotent: false,
+  only: null,
+  ignore: null
+};
 
-function loadDatabase(uri, options, callback) {
+function loadDatabase(uri, _options, callback) {
+  options = _extends({}, options, _options);
   try {
     _mongodb.MongoClient.connect(uri, function (err, mongodb) {
       if (err) return callback(err);
@@ -33,9 +42,10 @@ function loadDatabase(uri, options, callback) {
   }
 }
 
-function createTables(collections, options, callback) {
+function createTables(collections, _options, callback) {
   var idx = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
+  options = _extends({}, options, _options);
   if (idx < collections.length) {
     var tableName = collections[idx].collectionName;
     return collections[idx].find().toArray(function (error, documents) {
@@ -115,7 +125,7 @@ function parseValue(value) {
 
 function insertRows(tableName, columns, documents, callback) {
   documents.forEach(function (document) {
-    document.yosql_id = document.yosql_id || (0, _v2.default)();
+    document.yosql_id = document.yosql_id || (options.idempotent ? getUuid(JSON.stringify(document)) : (0, _v2.default)());
     return insertRow(tableName, columns, document);
   });
 

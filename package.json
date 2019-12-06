@@ -1,6 +1,6 @@
 {
   "name": "yosql",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Convert your MongoDB database and JSON collections to SQL.",
   "main": "dist/index.js",
   "scripts": {
@@ -23,7 +23,8 @@
     "babel-preset-stage-2": "^6.24.1",
     "bson": "^1.0.0",
     "mongodb": "^2.2.12",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.3",
+    "uuid-by-string": "^3.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

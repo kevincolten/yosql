@@ -1,9 +1,16 @@
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
 import uuid4 from 'uuid/v4';
+const getUuid = require('uuid-by-string')
 const schema = {};
+let options = {
+  idempotent: false,
+  only: null,
+  ignore: null
+};
 
-function loadDatabase(uri, options, callback) {
+function loadDatabase(uri, _options, callback) {
+  options = { ...options, ..._options }
   try {
     MongoClient.connect(uri, function (err, mongodb) {
       if (err) return callback(err);
@@ -19,7 +26,8 @@ function loadDatabase(uri, options, callback) {
   } catch (err) { return callback(err); }
 }
 
-function createTables(collections, options, callback, idx = 0) {
+function createTables(collections, _options, callback, idx = 0) {
+  options = { ...options, ..._options }
   if (idx < collections.length) {
     const tableName = collections[idx].collectionName;
     return collections[idx].find().toArray((error, documents) => {
@@ -97,7 +105,7 @@ function parseValue(value) {
 
 function insertRows(tableName, columns, documents, callback) {
   documents.forEach(document => {
-    document.yosql_id = document.yosql_id || uuid4();
+    document.yosql_id = document.yosql_id || (options.idempotent ? getUuid(JSON.stringify(document)) : uuid4());
     return insertRow(tableName, columns, document);
   });
 

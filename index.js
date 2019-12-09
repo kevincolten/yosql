@@ -10,7 +10,7 @@ let options = {
 };
 
 function loadDatabase(uri, _options, callback) {
-  options = { ...options, ..._options }
+  options = { ...options, ..._options };
   try {
     MongoClient.connect(uri, function (err, mongodb) {
       if (err) return callback(err);
@@ -27,7 +27,7 @@ function loadDatabase(uri, _options, callback) {
 }
 
 function createTables(collections, _options, callback, idx = 0) {
-  options = { ...options, ..._options }
+  options = { ...options, ..._options };
   if (idx < collections.length) {
     const tableName = collections[idx].collectionName;
     return collections[idx].find().toArray((error, documents) => {
@@ -36,20 +36,20 @@ function createTables(collections, _options, callback, idx = 0) {
         if (options.only && options.only.find(only => {
           return tableName === only;
         })) {
-          createTable(tableName, documents, () => {
+          createTable(tableName, documents, options, () => {
             return createTables(collections, options, callback, ++idx);
           });
         } else if (options.ignore && !options.ignore.find(ignore => {
           return tableName.includes(ignore);
         })) {
-          createTable(tableName, documents, () => {
+          createTable(tableName, documents, options, () => {
             return createTables(collections, options, callback, ++idx);
           });
         } else {
           return createTables(collections, options, callback, ++idx);
         }
       } else {
-        createTable(tableName, documents, () => {
+        createTable(tableName, documents, options, () => {
           return createTables(collections, options, callback, ++idx);
         });
       }
@@ -59,23 +59,24 @@ function createTables(collections, _options, callback, idx = 0) {
   return callback(null, schema);
 }
 
-function createTable(tableName, documents, callback, columns, idx = 0) {
+function createTable(tableName, documents, _options, callback, columns, idx = 0) {
+  options = { ...options, ..._options };
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'UUID PRIMARY KEY UNIQUE', order: 0 };
     schema[tableName].queries.create = `CREATE TABLE ${'`' + tableName + '`'} (yosql_id UUID PRIMARY KEY UNIQUE);`;
-    return createTable(tableName, documents, callback, columns, idx);
+    return createTable(tableName, documents, options, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], () => {
-      return createTable(tableName, documents, callback, columns, ++idx);
+      return createTable(tableName, documents, options, callback, columns, ++idx);
     });
   } else if (!columns && documents.length) {
     columns = Object.keys(documents[0]).filter(key => {
       return parseValue(typeof documents[0][key]) !== 'object';
     });
     return addColumn(tableName, columns[idx], () => {
-      return createTable(tableName, documents, callback, columns, ++idx);
+      return createTable(tableName, documents, options, callback, columns, ++idx);
     });
   }
   columns = columns || [];
@@ -149,7 +150,7 @@ function insertRow(tableName, columns, document) {
           return obj[`${tableName}_yosql_id`] = document['yosql_id'];
         });
         // console.log(`${tableName}_${newColumn}`);
-        return createTable(`${tableName}_${newColumn}`, document[newColumn], () => {
+        return createTable(`${tableName}_${newColumn}`, document[newColumn], options, () => {
           delete document[newColumn];
           return insertRow(tableName, columns, document);
         });

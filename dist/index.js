@@ -54,20 +54,20 @@ function createTables(collections, _options, callback) {
         if (options.only && options.only.find(function (only) {
           return tableName === only;
         })) {
-          createTable(tableName, documents, function () {
+          createTable(tableName, documents, options, function () {
             return createTables(collections, options, callback, ++idx);
           });
         } else if (options.ignore && !options.ignore.find(function (ignore) {
           return tableName.includes(ignore);
         })) {
-          createTable(tableName, documents, function () {
+          createTable(tableName, documents, options, function () {
             return createTables(collections, options, callback, ++idx);
           });
         } else {
           return createTables(collections, options, callback, ++idx);
         }
       } else {
-        createTable(tableName, documents, function () {
+        createTable(tableName, documents, options, function () {
           return createTables(collections, options, callback, ++idx);
         });
       }
@@ -77,25 +77,26 @@ function createTables(collections, _options, callback) {
   return callback(null, schema);
 }
 
-function createTable(tableName, documents, callback, columns) {
-  var idx = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+function createTable(tableName, documents, _options, callback, columns) {
+  var idx = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
 
+  options = _extends({}, options, _options);
   if (!schema[tableName]) {
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'UUID PRIMARY KEY UNIQUE', order: 0 };
     schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id UUID PRIMARY KEY UNIQUE);';
-    return createTable(tableName, documents, callback, columns, idx);
+    return createTable(tableName, documents, options, callback, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
-      return createTable(tableName, documents, callback, columns, ++idx);
+      return createTable(tableName, documents, options, callback, columns, ++idx);
     });
   } else if (!columns && documents.length) {
     columns = Object.keys(documents[0]).filter(function (key) {
       return parseValue(_typeof(documents[0][key])) !== 'object';
     });
     return addColumn(tableName, columns[idx], function () {
-      return createTable(tableName, documents, callback, columns, ++idx);
+      return createTable(tableName, documents, options, callback, columns, ++idx);
     });
   }
   columns = columns || [];
@@ -169,7 +170,7 @@ function insertRow(tableName, columns, document) {
           return obj[tableName + '_yosql_id'] = document['yosql_id'];
         });
         // console.log(`${tableName}_${newColumn}`);
-        return createTable(tableName + '_' + newColumn, document[newColumn], function () {
+        return createTable(tableName + '_' + newColumn, document[newColumn], options, function () {
           delete document[newColumn];
           return insertRow(tableName, columns, document);
         });

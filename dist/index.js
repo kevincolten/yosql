@@ -144,7 +144,7 @@ function insertRows(tableName, columns, documents, callback) {
     return '\'' + filledRow.join("', '") + '\'';
   }).join('), (');
 
-  schema[tableName].queries.insert = 'INSERT INTO ' + tableName + ' (' + columnNames.join(', ') + ') VALUES (' + inserts + ');';
+  schema[tableName].queries.insert = 'INSERT INTO `' + tableName + '` (`' + columnNames.join('`, `') + '`) VALUES (' + inserts + ');';
   return callback(null, schema);
 }
 

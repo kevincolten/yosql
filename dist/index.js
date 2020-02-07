@@ -112,7 +112,7 @@ function parseValue(value) {
     } else if (_bson.ObjectId.isValid(value)) {
       return value.toString();
     } else if (value === null) {
-      return '';
+      return 'NULL';
     } else {
       return [value];
     }

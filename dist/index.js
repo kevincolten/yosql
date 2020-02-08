@@ -112,12 +112,12 @@ function parseValue(value) {
     } else if (_bson.ObjectId.isValid(value)) {
       return value.toString();
     } else if (value === null) {
-      return 'NULL';
+      return null;
     } else {
       return [value];
     }
   } else if (value === undefined) {
-    return '';
+    return null;
   } else if (typeof value === 'string') {
     return value.replace(/\'/g, "''");
   }
@@ -139,7 +139,7 @@ function insertRows(tableName, columns, documents, callback) {
   var inserts = schema[tableName].rows.map(function (row) {
     var filledRow = [];
     columnNames.forEach(function (column, idx) {
-      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : 'NULL';
+      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : null;
     });
     return '\'' + filledRow.join("', '") + '\'';
   }).join('), (');

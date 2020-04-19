@@ -6,13 +6,6 @@
 
 ### `yosql.createTable(tableName, collection, callback)`
 
-### `yosql.loadDatabase(mongoUri, options, callback)`
-
-#### `options`
-
-* `only` only translate tables that **exactly** match these strings
-* `ignore` ignore tables that **include** these strings
-
 ## Examples
 
 ### Convert JSON collection
@@ -108,32 +101,11 @@ fetch('http://rss.indeed.com/rss?q=nodejs').then(res => res.text())
 .catch(error => console.error(error));
 ```
 
-### Convert MongoDB Database
-
-```js
-const yosql = require('yosql');
-const sqlite3 = require('sqlite3');
-yosql.loadDatabase('mongodb://localhost/database-name', {
-  // only: ['users']
-  ignore: ['objectlabs-system', 'admin', 'collections', '__versions'],
-}, (err, schema) => {
-  if (err) return console.log(err);
-  const db = new sqlite3.Database('database.sqlite3');
-  Object.keys(schema).forEach(table => {
-    db.serialize(() => {
-      db.run(schema[table].queries.create); // Create statement;
-      db.run(schema[table].queries.insert); // Insert statement;
-    });
-  });
-  db.close();
-});
-```
-
 ## Transpile
 
-1. `yarn`
-2. `yarn build`
+1. `npm i`
+2. `npm run build`
 
 ## Test
 
-1. `yarn test`
+1. `npm test`

@@ -1,5 +1,4 @@
 const yosql = require('./dist/index');
-const fs = require('fs');
 const assert = require('assert');
 
 const documents = [];
@@ -20,10 +19,11 @@ const documents = [];
 });
 
 describe('yosql', () => {
-  yosql.createTable('test', documents, (error, schema) => {
+  yosql.createTable('test', documents, { idempotent: true }, (error, schema) => {
+    require('fs').writeFileSync('./output.json', JSON.stringify(schema, null, 2))
     if (error) return console.error(error);
     it('generates correct schema', () => {
-      assert.deepEqual(schema, require('./schema'));
+      assert.deepEqual(schema, require('./schema.json'));
     })
   });
 });

@@ -1,7 +1,7 @@
 {
   "name": "yosql",
-  "version": "2.1.0",
-  "description": "Convert your MongoDB database and JSON collections to SQL.",
+  "version": "2.2.0",
+  "description": "Convert JSON to SQL.",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha test.js",
@@ -9,8 +9,6 @@
   },
   "keywords": [
     "sql",
-    "mongo",
-    "mongodb",
     "yosql",
     "nosql",
     "json"
@@ -18,26 +16,24 @@
   "author": "Kevin Colten",
   "license": "ISC",
   "dependencies": {
-    "babel-plugin-tailcall-optimization": "^1.0.11",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "bson": "^1.0.0",
-    "mongodb": "^2.2.12",
-    "uuid": "^3.3.3",
+    "uuid": "^7.0.3",
     "uuid-by-string": "^3.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
-    "babel-loader": "^6.2.8",
-    "mocha": "^4.0.1"
+    "babel-loader": "^8.1.0",
+    "babel-plugin-tailcall-optimization": "^2.0.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "mocha": "^7.1.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/kevincolten/yosql.git"
+    "url": "git+https://github.com/kevincolten/yosql.git"
   },
   "bugs": {
-    "url": "https://gitlab.com/kevincolten/yosql/issues"
+    "url": "https://github.com/kevincolten/yosql/issues"
   },
-  "homepage": "https://gitlab.com/kevincolten/yosql#readme"
+  "homepage": "https://github.com/kevincolten/yosql#readme"
 }

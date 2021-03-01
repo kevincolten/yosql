@@ -131,6 +131,6 @@ var addColumn = function addColumn(tableName, column, callback, schema) {
   if (schema[tableName]['columns'][column]) return callback();
   schema[tableName]['columns'][column] = { type: 'TEXT', order: Object.keys(schema[tableName].columns).length };
   // console.log(`ALTER TABLE '${tableName}' ADD COLUMN '${column}' TEXT;`);
-  schema[tableName].queries.create = schema[tableName].queries.create.replace(');', ', ' + ('`' + column + '`') + ' ' + schema[tableName]['columns'][column].type + ');');
+  schema[tableName].queries.create = schema[tableName].queries.create.replace(');', ', ' + ('`' + column + '`') + ' ' + schema[tableName]['columns'][column].type + ' ' + (column.includes('_yosql_id') ? ', INDEX ' + column + '_index(' + column + '(36))' : '') + ');');
   return callback(null, schema);
 };

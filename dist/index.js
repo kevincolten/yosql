@@ -20,6 +20,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var options = {
   idempotent: false
 };
+var now = new Date();
 
 var createTable = exports.createTable = function createTable(tableName, documents, _options, callback) {
   var schema = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
@@ -31,7 +32,8 @@ var createTable = exports.createTable = function createTable(tableName, document
     schema[tableName] = { columns: {}, length: 0, queries: {}, rows: [] };
     // console.log(`CREATE TABLE '${tableName}' ('yosql_id' INTEGER PRIMARY KEY UNIQUE);`);
     schema[tableName]['columns']['yosql_id'] = { type: 'UUID PRIMARY KEY UNIQUE', order: 0 };
-    schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id UUID PRIMARY KEY UNIQUE);';
+    schema[tableName]['columns']['yosql_created_at'] = { type: 'TEXT', order: 1 };
+    schema[tableName].queries.create = 'CREATE TABLE ' + ('`' + tableName + '`') + ' (yosql_id UUID PRIMARY KEY UNIQUE, yosql_created_at TEXT);';
     return createTable(tableName, documents, options, callback, schema, columns, idx);
   } else if (columns && idx < columns.length) {
     return addColumn(tableName, columns[idx], function () {
@@ -59,6 +61,7 @@ var parseValue = function parseValue(value) {
 var insertRows = function insertRows(tableName, columns, documents, callback, schema) {
   documents.forEach(function (document) {
     document.yosql_id = document.yosql_id || (options.idempotent ? (0, _uuidByString2.default)(JSON.stringify(document)) : (0, _uuid.v4)());
+    document.yosql_created_at = document.yosql_created_at || now.toISOString();
     return insertRow(tableName, columns, document, schema);
   });
 

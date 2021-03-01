@@ -1,6 +1,6 @@
 {
   "name": "yosql",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Convert JSON to SQL.",
   "main": "dist/index.js",
   "scripts": {

@@ -37,6 +37,7 @@ const parseValue = value =>  {
     else if (value === null) return null;
     else return [value];
   } else if (value === undefined) return null;
+  else if (value === '') return null;
   else if (typeof value === 'string') return value.replace(/\'/g,"''")
   return value;
 }

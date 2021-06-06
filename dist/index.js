@@ -54,7 +54,7 @@ var createTable = exports.createTable = function createTable(tableName, document
 var parseValue = function parseValue(value) {
   if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
     if (value instanceof Date) return value.toISOString();else if (Array.isArray(value)) return value;else if (value === null) return null;else return [value];
-  } else if (value === undefined) return null;else if (typeof value === 'string') return value.replace(/\'/g, "''");
+  } else if (value === undefined) return null;else if (value === '') return null;else if (typeof value === 'string') return value.replace(/\'/g, "''");
   return value;
 };
 

@@ -44,7 +44,7 @@ const parseValue = value =>  {
 
 const insertRows = (tableName, columns, documents, callback, schema) => {
   documents.forEach(document => {
-    document.yosql_id = document.yosql_id || (options.idempotent ? getUuid(JSON.stringify(document)) : uuidv4());
+    document.yosql_id = document.yosql_id || (options.idempotent ? getUuid(document[options.idempotent]) : uuidv4());
     document.yosql_created_at = document.yosql_created_at || now.toISOString();
     return insertRow(tableName, columns, document, schema);
   });

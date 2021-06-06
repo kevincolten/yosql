@@ -60,7 +60,7 @@ var parseValue = function parseValue(value) {
 
 var insertRows = function insertRows(tableName, columns, documents, callback, schema) {
   documents.forEach(function (document) {
-    document.yosql_id = document.yosql_id || (options.idempotent ? (0, _uuidByString2.default)(JSON.stringify(document)) : (0, _uuid.v4)());
+    document.yosql_id = document.yosql_id || (options.idempotent ? (0, _uuidByString2.default)(document[options.idempotent]) : (0, _uuid.v4)());
     document.yosql_created_at = document.yosql_created_at || now.toISOString();
     return insertRow(tableName, columns, document, schema);
   });

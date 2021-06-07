@@ -53,8 +53,8 @@ var createTable = exports.createTable = function createTable(tableName, document
 
 var parseValue = function parseValue(value) {
   if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
-    if (value instanceof Date) return value.toISOString();else if (Array.isArray(value)) return value;else if (value === null) return null;else return [value];
-  } else if (value === undefined) return null;else if (value === '') return null;else if (typeof value === 'string') return value.replace(/\'/g, "''");
+    if (value instanceof Date) return value.toISOString();else if (Array.isArray(value)) return value;else if (value === null) return 'NULL';else return [value];
+  } else if (value === undefined) return 'NULL';else if (value === '') return 'NULL';else if (typeof value === 'string') return value.replace(/\'/g, "''");
   return value;
 };
 
@@ -74,12 +74,11 @@ var insertRows = function insertRows(tableName, columns, documents, callback, sc
   var inserts = schema[tableName].rows.map(function (row) {
     var filledRow = [];
     columnNames.forEach(function (column, idx) {
-      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : null;
+      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : 'NULL';
     });
     return '\'' + filledRow.join("', '") + '\'';
   }).join('), (');
-
-  schema[tableName].queries.insert = 'INSERT INTO `' + tableName + '` (`' + columnNames.join('`, `') + '`) VALUES (' + inserts + ');';
+  schema[tableName].queries.insert = ('INSERT INTO `' + tableName + '` (`' + columnNames.join('`, `') + '`) VALUES (' + inserts + ');').split("'NULL'").join('NULL');
   return callback(null, schema);
 };
 

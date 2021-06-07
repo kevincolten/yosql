@@ -34,10 +34,10 @@ const parseValue = value =>  {
   if (typeof value === 'object') {
     if (value instanceof Date) return value.toISOString();
     else if (Array.isArray(value)) return value;
-    else if (value === null) return null;
+    else if (value === null) return 'NULL';
     else return [value];
-  } else if (value === undefined) return null;
-  else if (value === '') return null;
+  } else if (value === undefined) return 'NULL';
+  else if (value === '') return 'NULL';
   else if (typeof value === 'string') return value.replace(/\'/g,"''")
   return value;
 }
@@ -58,12 +58,11 @@ const insertRows = (tableName, columns, documents, callback, schema) => {
   const inserts = schema[tableName].rows.map(row => {
     const filledRow = [];
     columnNames.forEach((column, idx) => {
-      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : null;
+      filledRow[idx] = row.hasOwnProperty(column) ? row[column] : 'NULL';
     });
     return `'${filledRow.join("', '")}'`;
   }).join('), (');
-
-  schema[tableName].queries.insert = `INSERT INTO \`${tableName}\` (\`${columnNames.join('`, `')}\`) VALUES (${inserts});`;
+  schema[tableName].queries.insert = `INSERT INTO \`${tableName}\` (\`${columnNames.join('`, `')}\`) VALUES (${inserts});`.split("'NULL'").join('NULL');
   return callback(null, schema);
 }
 
